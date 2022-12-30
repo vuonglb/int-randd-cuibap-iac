@@ -15,23 +15,16 @@ class CloudFunctionStack(TerraformStack):
     def __init__(self, scope: Construct, ns, project_id) -> None:
         super().__init__(scope, ns)
 
-        GoogleProvider(self, id=project_id,
-                       region="us-central1", project=project_id)
+        GoogleProvider(self, id=project_id, region="us-central1", project=project_id)
 
-        code_bucket = StorageBucket(
-            self, "bucket", name="terraform-cf-zip-files", project=project_id, location="EU", )
+        code_bucket = StorageBucket(self, "bucket", name="terraform-cf-zip-files", project=project_id, location="EU", )
 
         asset = TerraformAsset(self, "cloud-function-asset",
-                               path=os.path.join(os.path.abspath(
-                                   os.path.dirname(__name__)), "function"),
-                               type=AssetType.ARCHIVE
-                               )
+                               path=os.path.join(os.path.abspath(os.path.dirname(__name__)), "function"),
+                               type=AssetType.ARCHIVE)
 
-        code_object = StorageBucketObject(self, "archive",
-                                          name=asset.file_name,
-                                          bucket=code_bucket.name,
-                                          source=asset.path,
-                                          )
+        code_object = StorageBucketObject(self, "archive", name=asset.file_name, bucket=code_bucket.name,
+                                          source=asset.path)
 
         cloud_function = CloudfunctionsFunction(self, 'addition-function',
                                                 name="addition",
@@ -53,6 +46,4 @@ class CloudFunctionStack(TerraformStack):
                                                    role="roles/cloudfunctions.invoker"
                                                    )
 
-        url = TerraformOutput(self, "cloud-function-url",
-                              value=cloud_function.https_trigger_url
-                              )
+        url = TerraformOutput(self, "cloud-function-url", value=cloud_function.https_trigger_url)
